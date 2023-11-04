@@ -1,30 +1,65 @@
 const express = require('express');
 const router = express.Router();
+const Author = require('../models/author');
 
-// GET /authors
-// Returns a list of authors in the database in JSON format.
-router.get('/', (req, res) => {
-    res.send('get all authors');
+router.get('/', async (req, res) => {
+    try {
+        const authors = await Author.find();
+        res.json(authors);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
 });
 
-// GET /author/{{id}}
-// Returns a detailed view of the specified author id.
-router.get('/:id', (req, res) => {
-    res.send('get author by id ' + req.params.id);
+router.get('/:id', getAuthor, (req, res) => {
+    res.send(res.author);
 });
 
-// POST /author
-// Creates a new author with the specified details.
-// Expects a JSON body.
-router.post('/', (req, res) => {
-    res.send('post author');
+router.post('/', async (req, res) => {
+    const author = new Author({
+        first_name: req.body.firstName,
+        last_name: req.body.lastName
+    });
+
+    try {
+        const newAuthor = await author.save();
+        res.status(201).json(newAuthor);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
 });
 
-// PUT /author/{{id}}
-// Updates an existing author.
-// Expects a JSON body.
-router.put('/:id', (req, res) => {
-    res.send('put author ' + req.params.id);
+router.put('/:id', getAuthor, async (req, res) => {
+    if (req.body.first_name != null) {
+        res.author.first_name = req.body.first_name;
+    }
+    if (req.body.last_name != null) {
+        res.author.last_name = req.body.last_name;
+    }
+
+    try {
+        const updatedAuthor = await res.author.save();
+        res.status(201).json(updatedAuthor);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
 });
+
+// this function retrieves an author for a given ID from the DB
+async function getAuthor(req, res, next) {
+    let author;
+    try {
+        author = await Author.findById(req.params.id);
+
+        if (author == null) {
+            return res.status(404).json({ message: "Can't find an author for the ID." });
+        }
+    } catch (error) {
+        return res.status(500).json({ message: error.message });
+    }
+
+    res.author = author;
+    next();
+}
 
 module.exports = router;
