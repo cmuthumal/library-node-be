@@ -9,6 +9,8 @@ const db = mongoose.connection;
 db.on('error', (error) => console.error(error));
 db.once('open', () => console.log('Connected to the database'));
 
+var cors = require('cors');
+app.use(cors());
 app.use(express.json());
 
 const booksRouter = require('./routes/books');
