@@ -2,23 +2,40 @@ const express = require('express');
 const router = express.Router();
 const Book = require('../models/book');
 
-// GET /books
-// Returns a list of books in the database in JSON format.
-// Should be able to paginate the response.
 router.get('/', async (req, res) => {
     try {
+        const page = parseInt(req.query.page);
+        const limit = parseInt(req.query.limit);
+        const result = {};
+        const startInd = (page - 1) * limit;
+        const endInd = page * limit;
+
         const books = await Book.find();
-        res.json(books);
+        if (endInd < books.length) {
+            result.next = {
+                page: page + 1,
+                limit: limit
+            }
+        }
+        if (startInd > 0) {
+            result.previous = {
+                page: page - 1,
+                limit: limit
+            }
+        }
+
+        result.results = books.slice(startInd, endInd);
+        res.json(result);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 });
 
-// GET /book/{{id}}/
-// Returns a detailed view of the specified book id.
-// Nest author details in JSON format.
-router.get('/:id', getBook, (req, res) => {
-    res.send(res.book);
+router.get('/:id', async (req, res) => {
+    const book = await Book.findOne({ _id: req.params.id }).
+        populate('author').
+        exec();
+    res.send(book);
 });
 
 router.post('/', async (req, res) => {

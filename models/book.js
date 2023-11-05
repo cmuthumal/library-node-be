@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const Author = require('./author');
 
 const bookSchema = new mongoose.Schema({
     name: {
@@ -10,8 +11,9 @@ const bookSchema = new mongoose.Schema({
         required: true
     },
     author: {
-        type: String,
-        required: true
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+        ref: 'Author'
     }
 });
 

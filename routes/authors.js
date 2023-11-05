@@ -17,8 +17,8 @@ router.get('/:id', getAuthor, (req, res) => {
 
 router.post('/', async (req, res) => {
     const author = new Author({
-        first_name: req.body.firstName,
-        last_name: req.body.lastName
+        first_name: req.body.first_name,
+        last_name: req.body.last_name
     });
 
     try {
