@@ -23,6 +23,8 @@ router.get('/', async (req, res) => {
                 limit: limit
             }
         }
+        result.length = books.length;
+        result.page = page;
 
         result.results = books.slice(startInd, endInd);
         res.json(result);
